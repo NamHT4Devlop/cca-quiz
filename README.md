@@ -3,9 +3,19 @@
 Website ôn tập trắc nghiệm tự chứa (một file `index.html` duy nhất, đã nhúng sẵn 300 câu).
 Chọn **đúng → xanh**, **sai → đỏ**, hiện luôn **đáp án đúng + giải thích**.
 
-## 🔗 Link chạy sẵn (đã deploy miễn phí)
-**https://claude.ai/code/artifact/28fd923c-79c2-4aaf-be4f-b4648ff2c9e9**
-Mở là dùng được ngay, chia sẻ được cho người khác. (Mặc định riêng tư trong tài khoản Claude của bạn — bấm *Share* nếu muốn công khai.)
+## 🔗 Web đã online (miễn phí)
+- **GitHub Pages (web chính, công khai):** https://namht4devlop.github.io/cca-quiz/
+- **Repo mã nguồn:** https://github.com/NamHT4Devlop/cca-quiz
+- **Bản Claude Artifact (riêng tư, chia sẻ tuỳ chọn):** https://claude.ai/code/artifact/28fd923c-79c2-4aaf-be4f-b4648ff2c9e9
+
+## 🔄 Cập nhật web sau này
+Sửa `index.html` (hoặc chạy lại `build.py` sau khi đổi `questions.json`) rồi:
+```bash
+cd /Users/MAC/Desktop/quiz-website
+git add -A && git commit -m "Cập nhật nội dung"
+git push
+```
+Sau ~1 phút GitHub Pages tự build lại, web cập nhật.
 
 ## ▶️ Dùng offline (không cần mạng, không cài gì)
 Nhấp đúp vào **`index.html`** — mở bằng trình duyệt là chạy được. Tiến độ tự lưu trong trình duyệt (localStorage), tắt/mở lại vẫn còn.

@@ -25,8 +25,8 @@
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
+html{height:100%}
+body{min-height:100%;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji",sans-serif;
   background:var(--bg); color:var(--text); line-height:1.6;
   -webkit-font-smoothing:antialiased; font-size:15.5px;
@@ -123,8 +123,9 @@ button{font-family:inherit; cursor:pointer}
 .side-foot #showAllBtn{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
 
 /* ---------- ANSWER KEY ---------- */
-.answers{max-width:820px; margin:0 auto; padding:24px clamp(16px,4vw,40px) 60px}
-.ans-top{display:flex; align-items:center; gap:14px; margin-bottom:6px; flex-wrap:wrap}
+.answers{max-width:820px; margin:0 auto; padding:0 clamp(16px,4vw,40px) 60px}
+.ans-bar{position:sticky; top:var(--topbar-h,56px); z-index:20; background:var(--bg); padding:16px 0 11px; margin-bottom:10px; border-bottom:1px solid var(--border)}
+.ans-top{display:flex; align-items:center; gap:14px; margin-bottom:10px; flex-wrap:wrap}
 .ans-top h2{font-size:20px; letter-spacing:-.02em; text-wrap:balance}
 .ans-sub{color:var(--muted); font-size:13.5px; margin-bottom:18px}
 .ans-card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-bottom:13px; box-shadow:var(--shadow)}
@@ -136,7 +137,7 @@ button{font-family:inherit; cursor:pointer}
 .ans-opt.cor{color:var(--correct); font-weight:600; background:var(--correct-bg); border-color:var(--correct-bd)}
 .ans-exp{margin-top:2px; padding:13px 15px; background:var(--correct-bg); border:1.5px solid var(--correct-bd); border-radius:11px; font-size:13.5px; line-height:1.62; white-space:pre-wrap; color:var(--text)}
 .ans-exp .lbl{font-weight:700; color:var(--correct)}
-.ans-tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap}
+.ans-tabs{display:flex; gap:8px; margin-bottom:0; flex-wrap:wrap}
 .ans-tabs .chip{font-size:13px; font-weight:600; padding:7px 14px; border-radius:99px; border:1px solid var(--border); background:var(--panel-2); color:var(--muted)}
 .ans-tabs .chip.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
 
@@ -382,13 +383,15 @@ function renderAnswers(){
   const backTxt = ansFrom==="quiz" ? "← Quay lại làm bài" : "← Về danh sách đề";
   const deChip = (S.de && S.de.ids) ? `<button class="chip ${ansScope==="de"?"on":""}" data-scope="de">Đề hiện tại (60 câu)</button>` : "";
   $("#answersView").innerHTML=`
-    <div class="ans-top">
-      <button class="ghost-btn" id="ansBack">${backTxt}</button>
-      <h2>📖 Đáp án &amp; giải thích</h2>
-    </div>
-    <div class="ans-tabs">
-      <button class="chip ${ansScope==="all"?"on":""}" data-scope="all">Tất cả 300 câu</button>
-      ${deChip}
+    <div class="ans-bar">
+      <div class="ans-top">
+        <button class="ghost-btn" id="ansBack">${backTxt}</button>
+        <h2>📖 Đáp án &amp; giải thích</h2>
+      </div>
+      <div class="ans-tabs">
+        <button class="chip ${ansScope==="all"?"on":""}" data-scope="all">Tất cả 300 câu</button>
+        ${deChip}
+      </div>
     </div>
     <p class="ans-sub">Đang xem <b>${ids.length}</b> câu · trang tra cứu, không ảnh hưởng điểm hay tiến độ làm bài.</p>
     ${cards}`;
@@ -644,6 +647,8 @@ document.addEventListener("keydown",e=>{
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 /* ---------- init ---------- */
+function setTopbarH(){ const t=document.querySelector('.topbar'); if(t) document.documentElement.style.setProperty('--topbar-h', t.offsetHeight+'px'); }
+setTopbarH(); addEventListener('resize', setTopbarH);
 applyTheme();
 if(S.view==="quiz" && S.de && S.order.length){ show("quiz"); renderQuiz(); }
 else if(S.view==="result" && S.de){ show("home"); renderHome(); }  // don't resume stale result

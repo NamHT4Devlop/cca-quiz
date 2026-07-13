@@ -606,7 +606,7 @@ function renderResult(correct,total){
   const rn=$("#randNew"); if(rn) rn.onclick=()=>startDe(makeRandomDe());
   $("#rAllAns").onclick=()=>openAnswers("all");
   $("#rHome").onclick=goHome;
-  $("#rReview").onclick=()=>{ S.idx=0; show("quiz"); renderQuiz(); save(); };
+  $("#rReview").onclick=()=>{ S.order.forEach(id=>{ S.checked[id]=true; }); S.idx=0; show("quiz"); renderQuiz(); save(); };
 }
 function nextFixedDe(){
   const i=FIXED.findIndex(d=>d.id===S.de.id);

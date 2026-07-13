@@ -130,11 +130,15 @@ button{font-family:inherit; cursor:pointer}
 .ans-card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-bottom:13px; box-shadow:var(--shadow)}
 .ans-card .aq{font-weight:600; font-size:15.5px; line-height:1.5; margin-bottom:10px}
 .ans-card .aq .qnum{font-size:12px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:3px 9px; border-radius:99px; margin-right:9px; white-space:nowrap}
-.ans-opt{display:flex; gap:10px; padding:6px 0; font-size:14px; color:var(--muted); border-top:1px solid var(--border)}
-.ans-opt .k{font-weight:700; width:26px; flex-shrink:0}
-.ans-opt.cor{color:var(--correct); font-weight:600}
-.ans-exp{margin-top:11px; padding:11px 14px; background:var(--panel-2); border-radius:9px; font-size:13.5px; line-height:1.6; white-space:pre-wrap}
+.ans-opts{display:flex; flex-direction:column; gap:7px; margin-bottom:13px}
+.ans-opt{display:flex; gap:10px; padding:10px 13px; font-size:14px; color:var(--muted); border:1.5px solid transparent; border-radius:10px; line-height:1.5}
+.ans-opt .k{font-weight:700; width:24px; flex-shrink:0}
+.ans-opt.cor{color:var(--correct); font-weight:600; background:var(--correct-bg); border-color:var(--correct-bd)}
+.ans-exp{margin-top:2px; padding:13px 15px; background:var(--correct-bg); border:1.5px solid var(--correct-bd); border-radius:11px; font-size:13.5px; line-height:1.62; white-space:pre-wrap; color:var(--text)}
 .ans-exp .lbl{font-weight:700; color:var(--correct)}
+.ans-tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap}
+.ans-tabs .chip{font-size:13px; font-weight:600; padding:7px 14px; border-radius:99px; border:1px solid var(--border); background:var(--panel-2); color:var(--muted)}
+.ans-tabs .chip.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
 
 .main{padding:24px clamp(16px,4vw,54px) 60px; max-width:900px; margin:0 auto; width:100%}
 .qcard{
@@ -261,6 +265,7 @@ button{font-family:inherit; cursor:pointer}
   <h1>Chọn đề để ôn tập</h1>
   <p class="sub">Mỗi đề gồm <b>60 câu</b>. Trả lời rồi bấm <b>“Kiểm tra”</b> để xem đúng/sai và giải thích. Làm xong đề sẽ <b>tự xáo trộn</b> để bạn luyện lại.</p>
   <div class="overall" id="overall"></div>
+  <button class="ghost-btn" id="homeAllAns" style="margin-bottom:22px">📖 Xem tất cả đáp án &amp; giải thích (300 câu)</button>
   <div class="de-grid" id="deGrid"></div>
   <p class="foot">Nguồn: PDF 300 câu của bạn · dữ liệu trích trung thực 100%.</p>
 </main>
@@ -353,9 +358,15 @@ function show(view){
 }
 
 /* ---------- ANSWER KEY (read-only, không tính điểm) ---------- */
-function openAnswers(){ if(!S.de) return; show("answers"); renderAnswers(); }
+let ansScope="all", ansFrom="home";
+function openAnswers(scope){
+  ansFrom = S.view==="quiz" ? "quiz" : S.view==="result" ? "result" : "home";
+  ansScope = scope || "all";
+  if(ansScope==="de" && !(S.de && S.de.ids)) ansScope="all";
+  show("answers"); renderAnswers();
+}
 function renderAnswers(){
-  const ids=S.de.ids.slice().sort((a,b)=>a-b);
+  const ids = (ansScope==="de" && S.de) ? S.de.ids.slice().sort((a,b)=>a-b) : QUESTIONS.map(q=>q.id);
   const cards=ids.map(id=>{
     const q=byId[id];
     const opts=KEYS.map(k=>{
@@ -364,18 +375,25 @@ function renderAnswers(){
     }).join("");
     return `<div class="ans-card">
       <div class="aq"><span class="qnum">Câu #${id}</span>${esc(q.question)}</div>
-      ${opts}
+      <div class="ans-opts">${opts}</div>
       <div class="ans-exp"><span class="lbl">Đáp án đúng: ${q.answer}.</span> ${q.explanation?esc(q.explanation):'(Không có giải thích trong đề gốc.)'}</div>
     </div>`;
   }).join("");
+  const backTxt = ansFrom==="quiz" ? "← Quay lại làm bài" : "← Về danh sách đề";
+  const deChip = (S.de && S.de.ids) ? `<button class="chip ${ansScope==="de"?"on":""}" data-scope="de">Đề hiện tại (60 câu)</button>` : "";
   $("#answersView").innerHTML=`
     <div class="ans-top">
-      <button class="ghost-btn" id="ansBack">← Quay lại làm bài</button>
-      <h2>📖 Đáp án &amp; giải thích — ${S.de.name}</h2>
+      <button class="ghost-btn" id="ansBack">${backTxt}</button>
+      <h2>📖 Đáp án &amp; giải thích</h2>
     </div>
-    <p class="ans-sub">${ids.length} câu · ${S.de.range}. Trang tra cứu — không ảnh hưởng điểm hay tiến độ làm bài.</p>
+    <div class="ans-tabs">
+      <button class="chip ${ansScope==="all"?"on":""}" data-scope="all">Tất cả 300 câu</button>
+      ${deChip}
+    </div>
+    <p class="ans-sub">Đang xem <b>${ids.length}</b> câu · trang tra cứu, không ảnh hưởng điểm hay tiến độ làm bài.</p>
     ${cards}`;
-  $("#ansBack").onclick=()=>{ show("quiz"); renderQuiz(); };
+  $("#ansBack").onclick=()=>{ if(ansFrom==="quiz"){ show("quiz"); renderQuiz(); } else goHome(); };
+  $("#answersView").querySelectorAll(".ans-tabs .chip").forEach(c=>c.onclick=()=>{ ansScope=c.dataset.scope; renderAnswers(); window.scrollTo(0,0); });
 }
 $("#homeBtn").onclick=goHome;
 $("#brandHome").onclick=goHome;
@@ -583,7 +601,7 @@ function renderResult(correct,total){
   const rw=$("#rWrong"); if(rw) rw.onclick=()=>startDe(S.de, wrongIds);
   const nd=$("#nextDe"); if(nd) nd.onclick=()=>startDe(nextFixedDe());
   const rn=$("#randNew"); if(rn) rn.onclick=()=>startDe(makeRandomDe());
-  $("#rAllAns").onclick=openAnswers;
+  $("#rAllAns").onclick=()=>openAnswers("all");
   $("#rHome").onclick=goHome;
   $("#rReview").onclick=()=>{ S.idx=0; show("quiz"); renderQuiz(); save(); };
 }
@@ -601,7 +619,8 @@ function nextDeButton(){
 $("#sideToggle").onclick=()=>document.body.classList.toggle("nav-open");
 $("#scrim").onclick=()=>document.body.classList.remove("nav-open");
 $("#finishBtn").onclick=finish;
-$("#showAllBtn").onclick=openAnswers;
+$("#showAllBtn").onclick=()=>openAnswers("all");
+$("#homeAllAns").onclick=()=>openAnswers("all");
 document.addEventListener("keydown",e=>{
   if(S.view!=="quiz"||e.target.tagName==="INPUT") return;
   const id=curId();
